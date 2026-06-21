@@ -8,6 +8,55 @@
 using namespace std;
 
 // ================= Helper Functions =================
+void signUp() {
+    string username, password, role;
+
+    cin.ignore();
+    cout << "Enter Username: ";
+    getline(cin, username);
+
+    cout << "Enter Password: ";
+    getline(cin, password);
+
+    cout << "Role (admin/user): ";
+    getline(cin, role);
+
+    ofstream file("users.txt", ios::app);
+    file << username << "|" << password << "|" << role << endl;
+    file.close();
+
+    cout << "Account created successfully.\n";
+}
+string login() {
+    string username, password;
+    cin.ignore();
+
+    cout << "Username: ";
+    getline(cin, username);
+
+    cout << "Password: ";
+    getline(cin, password);
+
+    ifstream file("users.txt");
+    string line;
+
+    while (getline(file, line)) {
+
+        string u, p, r;
+        stringstream ss(line);
+
+        getline(ss, u, '|');
+        getline(ss, p, '|');
+        getline(ss, r, '|');
+
+        if (u == username && p == password) {
+            cout << "\nLogin Successful!\n";
+            return r;
+        }
+    }
+
+    return "";
+}
 int stringToInt(string s) {
     stringstream ss(s);
     int value = 0;
@@ -38,6 +87,37 @@ string normalizeWasteType(string wasteType) {
 }
 
 // ================= Abstraction + Polymorphism =================
+class User {
+private:
+    string username;
+    string password;
+    string role;
+
+public:
+    User() {}
+
+    User(string u, string p, string r) {
+        username = u;
+        password = p;
+        role = r;
+    }
+
+    string getUsername() {
+        return username;
+    }
+
+    string getPassword() {
+        return password;
+    }
+
+    string getRole() {
+        return role;
+    }
+
+    string toFileString() {
+        return username + "|" + password + "|" + role;
+    }
+};
 class WasteCategory {
 public:
     virtual string getCategoryName() = 0;
@@ -459,6 +539,49 @@ public:
 
         file.close();
     }
+    void userMenu() {
+    int choice;
+
+    do {
+        cout << "\n====================================" << endl;
+        cout << "          USER DASHBOARD" << endl;
+        cout << "====================================" << endl;
+        cout << "1. View Smart Bins" << endl;
+        cout << "2. Search Bin" << endl;
+        cout << "3. Classify Waste" << endl;
+        cout << "4. Generate System Report" << endl;
+        cout << "0. Logout" << endl;
+        cout << "Enter Choice: ";
+        cin >> choice;
+
+        switch (choice) {
+
+        case 1:
+            viewSmartBins();
+            break;
+
+        case 2:
+            searchBin();
+            break;
+
+        case 3:
+            classifyWasteMenu();
+            break;
+
+        case 4:
+            generateSystemReport();
+            break;
+
+        case 0:
+            cout << "\nLogging out...\n";
+            break;
+
+        default:
+            cout << "\nInvalid choice! Try again.\n";
+        }
+
+    } while (choice != 0);
+}
 
     void saveTrucksToFile() {
         ofstream file("trucks.txt");
@@ -764,8 +887,56 @@ public:
 };
 
 // ================= Main Function =================
+// ================= Main Function =================
 int main() {
+
     WasteManagementSystem system;
-    system.showMenu();
+    int choice;
+
+    do {
+
+        cout << "\n=====================================" << endl;
+        cout << "      WASTE MANAGEMENT SYSTEM" << endl;
+        cout << "=====================================" << endl;
+        cout << "1. Sign Up" << endl;
+        cout << "2. Login" << endl;
+        cout << "0. Exit" << endl;
+        cout << "Enter Choice: ";
+        cin >> choice;
+
+        switch (choice) {
+
+        case 1:
+            signUp();
+            break;
+
+        case 2: {
+            string role = login();
+
+            if (role == "admin") {
+                cout << "\nLogin Successful as Admin!" << endl;
+                system.showMenu();      // Admin Dashboard
+            }
+            else if (role == "user") {
+                cout << "\nLogin Successful as User!" << endl;
+                system.userMenu();      // User Dashboard
+            }
+            else {
+                cout << "\nInvalid Username or Password!" << endl;
+            }
+
+            break;
+        }
+
+        case 0:
+            cout << "\nSaving data and exiting program..." << endl;
+            break;
+
+        default:
+            cout << "\nInvalid choice. Try again." << endl;
+        }
+
+    } while (choice != 0);
+
     return 0;
 }
